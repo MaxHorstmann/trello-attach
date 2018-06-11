@@ -28,20 +28,24 @@ namespace TrelloPush
 //   ],
 //   "disabled": false
 // }
-
+      
         [FunctionName("GitPush")]
-        public static IActionResult GitPush(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, 
-            TraceWriter log)
+        public static IActionResult GitPush([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log)
         {
-            log.Info("Git push received.");
+            log.Info("C# HTTP trigger function processed a request.");
 
-            // Get request body
-            dynamic data = await req.Content.ReadAsAsync<object>();
-            
-            
+            string name = req.Query["name"];
 
-            return req.CreateResponse(HttpStatusCode.OK, data);
+            string requestBody = new StreamReader(req.Body).ReadToEnd();
+            dynamic data = JsonConvert.DeserializeObject(requestBody);
+            name = name ?? data?.name;
+
+            return name != null
+                ? (ActionResult)new OkObjectResult($"Hello, {name}")
+                : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
         }
+
     }
 }
+
+
